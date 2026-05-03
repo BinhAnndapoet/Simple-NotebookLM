@@ -2,6 +2,7 @@ from pathlib import Path
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Literal
+from functools import lru_cache
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_prefix="RAG_", extra="ignore")
@@ -48,3 +49,7 @@ def validate_config(self) -> Settings:
     if self.llm_provider == "gemini" and not self.google_api_key:
         raise ValueError("GOOGLE_API_KEY is required when llm_provider='gemini'.")  
     return self
+
+@lru_cache(maxsize=1)
+def get_settings() -> Settings:
+    return Settings()
