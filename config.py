@@ -1,5 +1,5 @@
 from pathlib import Path
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Literal
 
@@ -36,3 +36,15 @@ class Settings(BaseSettings):
 settings = Settings()
 settings.data_dir.mkdir(parents=True, exist_ok=True)
 settings.storage_dir.mkdir(parents=True, exist_ok=True)
+
+@model_validator(mode="after")
+def validate_config(self) -> Settings:
+    if self.chunk_overlap >= self.chunk_size:
+        raise ValueError("chunk_overlap must be smaller than chunk_size.")
+    
+    if self.hf_device < -1:
+        raise ValueError("hf_device must be -1 for CPU or >= 0 for CUDA.")
+    
+    if self.llm_provider == "gemini" and not self.google_api_key:
+        raise ValueError("GOOGLE_API_KEY is required when llm_provider='gemini'.")  
+    return self
