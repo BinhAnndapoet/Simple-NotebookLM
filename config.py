@@ -53,3 +53,5 @@ def validate_config(self) -> Settings:
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     return Settings()
+
+settings = get_settings()
